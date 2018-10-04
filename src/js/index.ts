@@ -3,6 +3,7 @@ import { Framerate } from "./framerate";
 import { Vector } from "./vector";
 import { Player } from "./player";
 import { Ball } from "./ball";
+import { Computer } from "./computer";
 
 /*
     THis is the main PONG GAME script
@@ -14,6 +15,7 @@ export class GameEngine
     // items in the game
     public ball:Ball;
     public player1:Player;
+    public computer:Computer;
  
     // canvas info
     public canvasWidth:number;
@@ -51,6 +53,9 @@ export class GameEngine
         
         this.player1 = new Player(new Vector(20,10), this);
         this.objects.push(this.player1);
+
+        this.computer = new Computer(new Vector(260, 10), this);
+        this.objects.push(this.computer);
 
         this.ball = new Ball(new Vector(this.canvasWidth/2, this.canvasHeight/2), this);
         this.objects.push(this.ball);
@@ -126,12 +131,13 @@ export class GameEngine
             // every element is drawn on canvas
             element.draw(this.ctx);
         });
-        
-        // call the main gamelop again (~60fps by default)
-        window.requestAnimationFrame(this.gameLoop.bind(this));
 
-
-
+        console.log(this.ball.position.x)
+        console.log(this.player1.position.x)
+        console.log(this.computer.position.x)
+        if (this.ball.position.x < this.player1.position.x || this.ball.position.x < this.computer.position.x+25){
+            window.requestAnimationFrame(this.gameLoop.bind(this));
+        }
     }
 }
 
