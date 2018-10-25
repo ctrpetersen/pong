@@ -4,18 +4,52 @@ import { Vector } from "./vector";
 import { Player } from "./player";
 import { Ball } from "./ball";
 import { Computer } from "./computer";
+import axios from "axios";
+import { sideWall } from "./sideWall";
 
-/*
-    THis is the main PONG GAME script
-*/
+var url = "http://highscorepong.azurewebsites.net/api/highscore/";
+var highscoresList = document.getElementById("highscoresList");
+var scoreSpan = document.getElementById("scoreSpan");
+var highscoresArr = [];
+
+
+
+function UpdateHighscores():void{
+    axios.get(url)
+    .then(function (response){
+        response.data.forEach(highscoreEntry => {
+            var score:string = highscoreEntry;
+
+            var scoreNumber:number = Number(score.slice(6));
+
+            highscoresArr.push({
+                id: score.slice(0,1),
+                name: score.slice(2,5),
+                score: scoreNumber
+            })
+        });
+        var sortedScores = highscoresArr.slice(0);
+        sortedScores.sort(function(a,b) {
+            return b.score - a.score;
+        });
+        sortedScores.forEach(score => {
+            var element = document.createElement("li");
+            element.innerHTML = score.name + " " +  score.score;
+            highscoresList.appendChild(element);
+        });
+    });
+}
+
 
 export class GameEngine
 {
-
+    public score:number = 0;
     // items in the game
     public ball:Ball;
     public player1:Player;
     public computer:Computer;
+    public sideWallPlayer:sideWall;
+    public sideWallEnemy:sideWall;
  
     // canvas info
     public canvasWidth:number;
@@ -47,9 +81,6 @@ export class GameEngine
         // listen for keyboard input
         document.addEventListener('keyup', this.keyUp.bind(this));
         document.addEventListener('keydown', this.keyDown.bind(this));
-
-        //ceate gameobjects
-        this.objects.push(new Framerate(new Vector(10,10)));
         
         this.player1 = new Player(new Vector(20,10), this);
         this.objects.push(this.player1);
@@ -59,6 +90,11 @@ export class GameEngine
 
         this.ball = new Ball(new Vector(this.canvasWidth/2, this.canvasHeight/2), this);
         this.objects.push(this.ball);
+
+        this.sideWallPlayer = new sideWall(new Vector(0,0), this);
+        this.objects.push(this.sideWallPlayer);   
+        this.sideWallEnemy = new sideWall(new Vector(this.canvasWidth-3,0), this);
+        this.objects.push(this.sideWallEnemy); 
 
         this.gameLoop();
     }
@@ -132,15 +168,15 @@ export class GameEngine
             element.draw(this.ctx);
         });
 
-        console.log(this.ball.position.x)
-        console.log(this.player1.position.x)
-        console.log(this.computer.position.x)
-        if (this.ball.position.x < this.player1.position.x || this.ball.position.x < this.computer.position.x+25){
+        if (this.sideWallPlayer.lost == false){
             window.requestAnimationFrame(this.gameLoop.bind(this));
         }
+
+        scoreSpan.innerHTML = this.score.toString();
     }
 }
 
 //start gameengine
 new GameEngine();
+UpdateHighscores();
 

@@ -8,9 +8,10 @@ export class Ball implements GameObject
     public width: number;
     private gameEngine:GameEngine;
     public position:Vector;
-    private direction:Vector;
+    public direction:Vector;
     private speed:number = 80;
     private size:number= 10;
+    private lastCollision:GameObject;
 
     constructor (position:Vector, gameEngine:GameEngine)
     {
@@ -46,10 +47,11 @@ export class Ball implements GameObject
     // in case of any collision this method is called
     onColliosion(other: GameObject): void {
         // reverse direction if player collides with ball
-        if (other == this.gameEngine.player1 || other == this.gameEngine.computer)
+        if (this.lastCollision != other && other == this.gameEngine.player1 || other == this.gameEngine.computer)
         {
             this.direction.x *= -1;
         }
+        this.lastCollision = other;
     }
 
 }
